@@ -14,6 +14,7 @@ EXTRA_CFLAGS += -O1
 #EXTRA_CFLAGS += -Wno-unused-function
 EXTRA_CFLAGS += -Wno-unused
 #EXTRA_CFLAGS += -Wno-uninitialized
+EXTRA_CFLAGS += -Wno-incompatible-function-pointer-types
 
 GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
 ifeq ($(GCC_VER_49),1)
@@ -2545,7 +2546,7 @@ ifeq ($(CONFIG_RTL8723B), y)
 $(MODULE_NAME)-$(CONFIG_MP_INCLUDED)+= core/rtw_bt_mp.o
 endif
 
-obj-$(CONFIG_RTL8822ES) := $(MODULE_NAME).o
+obj-m := $(MODULE_NAME).o
 
 else
 
@@ -2556,7 +2557,11 @@ all: modules
 
 modules:
 	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KSRC) M=$(M)  modules
+ifneq ($(LLVM),)
+	llvm-strip --strip-unneeded ${OUT_DIR}/$(M)/$(MODULE_NAME).ko
+else
 	$(CROSS_COMPILE)strip --strip-unneeded ${OUT_DIR}/$(M)/$(MODULE_NAME).ko
+endif
 
 strip:
 	$(CROSS_COMPILE)strip $(MODULE_NAME).ko --strip-unneeded
@@ -2631,3 +2636,18 @@ clean:
 	rm -fr .tmp_versions
 endif
 
+ifneq ($(srctree),)
+_EXTRA_CFLAGS :=
+_INC_CFLAGS :=
+$(foreach flag,$(EXTRA_CFLAGS),\
+ $(if $(shell echo $(flag) | grep "\-I"),\
+  $(eval _INC_CFLAGS += $(flag)),\
+  $(eval _EXTRA_CFLAGS += $(flag))\
+ )\
+)
+_INC_CFLAGS := \
+$(foreach flag,$(subst -I,,$(_INC_CFLAGS)),\
+ $(shell if test -d $(srctree)/$(flag); then echo -I$$(cd $(srctree)/$(flag) && pwd); else echo -I$(flag); fi)\
+)
+EXTRA_CFLAGS := $(_EXTRA_CFLAGS) $(_INC_CFLAGS)
+endif

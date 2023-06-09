@@ -900,23 +900,18 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	padapter = (_adapter *)rtw_zvmalloc(sizeof(*padapter));
 	if (padapter == NULL)
 		goto exit;
-	RTW_INFO("=====0000=====\n");
 	if (loadparam(padapter) != _SUCCESS)
 		goto free_adapter;
 
-	RTW_INFO("padapter != NULL\n");
 #ifdef RTW_SUPPORT_PLATFORM_SHUTDOWN
 	RTW_INFO("=====RTW_SUPPORT_PLATFORM_SHUTDOWN=====\n");
 	g_test_adapter = padapter;
 #endif /* RTW_SUPPORT_PLATFORM_SHUTDOWN */
 	padapter->dvobj = dvobj;
 
-	RTW_INFO("=====0001=====\n");
 	rtw_set_drv_stopped(padapter);/*init*/
-	RTW_INFO("=====0002=====\n");
 	dvobj->padapters[dvobj->iface_nums++] = padapter;
 	padapter->iface_id = IFACE_ID0;
-	RTW_INFO("=====0003=====\n");
 	/* set adapter_type/iface type for primary padapter */
 	padapter->isprimary = _TRUE;
 	padapter->adapter_type = PRIMARY_ADAPTER;
@@ -925,15 +920,12 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 #else
 	padapter->hw_port = HW_PORT0;
 #endif
-	RTW_INFO("=====0004=====\n");
 	padapter->adapter_link.adapter = padapter;
-	RTW_INFO("=====0005=====\n");
 	/* 3 3. init driver special setting, interface, OS and hardware relative */
 
 	/* 4 3.1 set hardware operation functions */
 	if (rtw_set_hal_ops(padapter) == _FAIL)
 		goto free_hal_data;
-	RTW_INFO("=====0006=====\n");
 	/* 3 5. initialize Chip version */
 	padapter->intf_start = &sd_intf_start;
 	padapter->intf_stop = &sd_intf_stop;
@@ -941,7 +933,6 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	if (rtw_init_io_priv(padapter, sdio_set_intf_ops) == _FAIL) {
 		goto free_hal_data;
 	}
-	RTW_INFO("=====0007=====\n");
 	rtw_hal_read_chip_version(padapter);
 
 	rtw_hal_chip_configure(padapter);
@@ -950,32 +941,26 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	rtw_btcoex_Initialize(padapter);
 #endif
 	rtw_btcoex_wifionly_initialize(padapter);
-	RTW_INFO("=====0008=====\n");
 	RTW_INFO("padapter = 0x%08x\n", padapter);
 	/* 3 6. read efuse/eeprom data */
 	if (rtw_hal_read_chip_info(padapter) == _FAIL)
 		goto free_hal_data;
-	RTW_INFO("=====0009=====\n");
 	/* 3 7. init driver common data */
 	if (rtw_init_drv_sw(padapter) == _FAIL) {
 		goto free_hal_data;
 	}
-	RTW_INFO("=====00010=====\n");
 	/* 3 8. get WLan MAC address */
 	/* set mac addr */
 	rtw_macaddr_cfg(adapter_mac_addr(padapter),  get_hal_mac_addr(padapter));
 
 #ifdef CONFIG_MI_WITH_MBSSID_CAM
-	RTW_INFO("=====00011=====\n");
 	rtw_mbid_camid_alloc(padapter, adapter_mac_addr(padapter));
 #endif
 #ifdef CONFIG_P2P
-	RTW_INFO("=====00012=====\n");
 	rtw_init_wifidirect_addrs(padapter, adapter_mac_addr(padapter), adapter_mac_addr(padapter));
 #endif /* CONFIG_P2P */
 
 	rtw_hal_disable_interrupt(padapter);
-	RTW_INFO("=====00013=====\n");
 	RTW_INFO("bDriverStopped:%s, bSurpriseRemoved:%s, bup:%d, hw_init_completed:%d\n"
 		, rtw_is_drv_stopped(padapter) ? "True" : "False"
 		, rtw_is_surprise_removed(padapter) ? "True" : "False"
@@ -984,11 +969,9 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	);
 
 	status = _SUCCESS;
-	RTW_INFO("=====00014=====\n");
 free_hal_data:
 	RTW_INFO("going free_hal_data\n");
 	if (status != _SUCCESS && padapter->HalData) {
-		RTW_INFO("=====2222=====\n");
 		rtw_hal_free_data(padapter);
 	}
 
@@ -1001,7 +984,6 @@ free_adapter:
 		padapter = NULL;
 	}
 exit:
-	RTW_INFO("=====1111=====\n");
 	return padapter;
 }
 
