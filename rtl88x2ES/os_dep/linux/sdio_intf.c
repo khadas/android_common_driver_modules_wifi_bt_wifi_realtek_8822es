@@ -900,18 +900,20 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	padapter = (_adapter *)rtw_zvmalloc(sizeof(*padapter));
 	if (padapter == NULL)
 		goto exit;
+
 	if (loadparam(padapter) != _SUCCESS)
 		goto free_adapter;
 
 #ifdef RTW_SUPPORT_PLATFORM_SHUTDOWN
-	RTW_INFO("=====RTW_SUPPORT_PLATFORM_SHUTDOWN=====\n");
 	g_test_adapter = padapter;
 #endif /* RTW_SUPPORT_PLATFORM_SHUTDOWN */
 	padapter->dvobj = dvobj;
 
 	rtw_set_drv_stopped(padapter);/*init*/
+
 	dvobj->padapters[dvobj->iface_nums++] = padapter;
 	padapter->iface_id = IFACE_ID0;
+
 	/* set adapter_type/iface type for primary padapter */
 	padapter->isprimary = _TRUE;
 	padapter->adapter_type = PRIMARY_ADAPTER;
@@ -921,11 +923,13 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	padapter->hw_port = HW_PORT0;
 #endif
 	padapter->adapter_link.adapter = padapter;
+
 	/* 3 3. init driver special setting, interface, OS and hardware relative */
 
 	/* 4 3.1 set hardware operation functions */
 	if (rtw_set_hal_ops(padapter) == _FAIL)
 		goto free_hal_data;
+
 	/* 3 5. initialize Chip version */
 	padapter->intf_start = &sd_intf_start;
 	padapter->intf_stop = &sd_intf_stop;
@@ -933,6 +937,7 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	if (rtw_init_io_priv(padapter, sdio_set_intf_ops) == _FAIL) {
 		goto free_hal_data;
 	}
+
 	rtw_hal_read_chip_version(padapter);
 
 	rtw_hal_chip_configure(padapter);
@@ -941,14 +946,16 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	rtw_btcoex_Initialize(padapter);
 #endif
 	rtw_btcoex_wifionly_initialize(padapter);
-	RTW_INFO("padapter = 0x%08x\n", padapter);
+
 	/* 3 6. read efuse/eeprom data */
 	if (rtw_hal_read_chip_info(padapter) == _FAIL)
 		goto free_hal_data;
+
 	/* 3 7. init driver common data */
 	if (rtw_init_drv_sw(padapter) == _FAIL) {
 		goto free_hal_data;
 	}
+
 	/* 3 8. get WLan MAC address */
 	/* set mac addr */
 	rtw_macaddr_cfg(adapter_mac_addr(padapter),  get_hal_mac_addr(padapter));
@@ -961,6 +968,7 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 #endif /* CONFIG_P2P */
 
 	rtw_hal_disable_interrupt(padapter);
+
 	RTW_INFO("bDriverStopped:%s, bSurpriseRemoved:%s, bup:%d, hw_init_completed:%d\n"
 		, rtw_is_drv_stopped(padapter) ? "True" : "False"
 		, rtw_is_surprise_removed(padapter) ? "True" : "False"
@@ -969,11 +977,10 @@ _adapter *rtw_sdio_primary_adapter_init(struct dvobj_priv *dvobj)
 	);
 
 	status = _SUCCESS;
+
 free_hal_data:
-	RTW_INFO("going free_hal_data\n");
-	if (status != _SUCCESS && padapter->HalData) {
+	if (status != _SUCCESS && padapter->HalData)
 		rtw_hal_free_data(padapter);
-	}
 
 free_adapter:
 	if (status != _SUCCESS && padapter) {
@@ -1101,11 +1108,8 @@ static int rtw_drv_init(
 		goto exit;
 	}
 
-	RTW_INFO("dvobj == 0x%08x\n", dvobj);
-	RTW_INFO("start rtw_sdio_primary_adapter_init\n");
 	padapter = rtw_sdio_primary_adapter_init(dvobj);
 	if (padapter == NULL) {
-		RTW_INFO("padapter == NULL\n");
 		RTW_INFO("rtw_init_primary_adapter Failed!\n");
 		goto free_dvobj;
 	}

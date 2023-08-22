@@ -68,13 +68,13 @@ u8 rtw_hal_read_chip_info(_adapter *padapter)
 		rtw_hal_power_on(padapter);
 
 	rtn = padapter->hal_func.read_adapter_info(padapter);
-	RTW_INFO("%s 00rtn = %d\n", __func__, rtn);
+
 	if ((hci_type == RTW_SDIO || hci_type == RTW_GSPI)
 	    && !rtw_is_hw_init_completed(padapter))
 		rtw_hal_power_off(padapter);
 
 	RTW_INFO("%s in %d ms\n", __func__, rtw_get_passing_time_ms(start));
-	RTW_INFO("%s 01rtn = %d\n", __func__, rtn);
+
 	return rtn;
 }
 
